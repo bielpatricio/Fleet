@@ -50,8 +50,8 @@ $ npm start or yarn start
 
 The application layout is available on Figma:
 
-<a href="https://www.figma.com/file/oBuBL52FFb2oGv2un9HP5L/ToDo-List-(Copy)?node-id=0%3A1&t=Ms614c9lQqNjzLSW-0">
-  <img alt="Made by rocketseat" src="https://www.figma.com/file/2hs0NVLOik5uAlFmD0bz3N/Ignite-Fleet-(Copy)?type=design&node-id=47-2&t=XWSyr5E4bhnHFFYf-0">
+<a href="https://www.figma.com/file/2hs0NVLOik5uAlFmD0bz3N/Ignite-Fleet-(Copy)?type=design&node-id=47-2&t=XWSyr5E4bhnHFFYf-0">
+  <img alt="Made by rocketseat" src="https://img.shields.io/badge/Acessar%20Layout%20-Figma-%2304D361">
 </a>
 <br>
 
