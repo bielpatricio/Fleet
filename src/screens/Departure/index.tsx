@@ -1,5 +1,5 @@
-import { useRef, useState } from 'react'
-import { Container, Content } from './styles'
+import { useEffect, useRef, useState } from 'react'
+import { Container, Content, Message } from './styles'
 import { Header } from '@components/Header'
 import { LicensePlateInput } from '@components/LicensePlateInput'
 import { TextAreaInput } from '@components/TextAreaInput'
@@ -18,6 +18,17 @@ import { Historic } from '@libs/realm/schemas/Historic'
 import { useUser } from '@realm/react'
 import { useNavigation } from '@react-navigation/native'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {
+  LocationAccuracy,
+  useForegroundPermissions,
+  watchPositionAsync,
+  LocationSubscription,
+} from 'expo-location'
+import { getAddressLocation } from '@utils/getAddressLocation'
+import { Loading } from '@components/Loading'
+import { Label } from '../../components/LocationInfo/styles'
+import { LocationInfo } from '@components/LocationInfo'
+import { Car } from 'phosphor-react-native'
 
 const keyboardAvoidingView = Platform.OS === 'android' ? 'height' : 'position'
 
@@ -25,6 +36,11 @@ export function Departure() {
   const [description, setDescription] = useState('')
   const [licensePlate, setLicensePlate] = useState('')
   const [isRegistering, setIsRegistering] = useState(false)
+  const [isLoadingLocation, setIsLoadingLocation] = useState(true)
+  const [currentAddress, setCurrentAddress] = useState<string | null>(null)
+
+  const [locationForegroundPermission, requestLocationForegroundPermission] =
+    useForegroundPermissions()
 
   const descriptionRef = useRef<TextInput>(null)
   const licensePlateRef = useRef<TextInput>(null)
@@ -78,6 +94,57 @@ export function Departure() {
     }
   }
 
+  useEffect(() => {
+    requestLocationForegroundPermission()
+  }, [])
+
+  useEffect(() => {
+    if (!locationForegroundPermission?.granted) {
+      return
+    }
+
+    let subscription: LocationSubscription
+
+    watchPositionAsync(
+      {
+        accuracy: LocationAccuracy.High,
+        timeInterval: 1000,
+      },
+      (location) => {
+        getAddressLocation(location.coords)
+          .then((address) => {
+            if (address) {
+              setCurrentAddress(address)
+            }
+          })
+          .finally(() => setIsLoadingLocation(false))
+      },
+    ).then((response) => (subscription = response))
+
+    return () => {
+      if (subscription) {
+        subscription.remove()
+      }
+    }
+  }, [locationForegroundPermission])
+
+  if (!locationForegroundPermission?.granted) {
+    return (
+      <Container>
+        <Header title="Saída" />
+        <Message>
+          Você precisa permitir que o aplicativo tenha acesso a localização para
+          utilizar essa funcionalidade. Por favor, acesse as configurações do
+          seu dispositivo para conceder essa permissão ao aplicativo.
+        </Message>
+      </Container>
+    )
+  }
+
+  if (isLoadingLocation) {
+    return <Loading />
+  }
+
   return (
     <Container>
       <Header title="Saída" />
@@ -86,6 +153,14 @@ export function Departure() {
       <KeyboardAwareScrollView extraHeight={100}>
         <ScrollView style={{ flex: 1 }}>
           <Content>
+            {currentAddress && (
+              <LocationInfo
+                icon={Car}
+                label="Localização atual"
+                description={currentAddress}
+              />
+            )}
+
             <LicensePlateInput
               ref={licensePlateRef}
               onSubmitEditing={() => descriptionRef.current?.focus()}
