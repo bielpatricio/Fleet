@@ -60,7 +60,11 @@ The application layout is available on Figma:
   
   <img src="https://github.com/bielpatricio/Fleet/assets/32223762/15caf722-72ba-4dbc-9dce-e9d93f7cefa7" alt="Foto 1"  height="700">
   
-  <img src="https://github.com/bielpatricio/Fleet/assets/32223762/595852c8-a421-4258-89aa-37021888a8c5" alt="Foto 1"  height="700">
+  <img src="https://github.com/bielpatricio/Fleet/assets/32223762/a565a827-56c6-43cb-b429-a762dcbaa791" alt="Foto 1"  height="700">
+
+  <img src="https://github.com/bielpatricio/Fleet/assets/32223762/dd6ae896-cf29-4ce2-8899-7ec58eae285b" alt="Foto 1"  height="700">
+
+  <img src="https://github.com/bielpatricio/Fleet/assets/32223762/96ef534c-7b42-4599-b3ec-9fbb1bf9870c" alt="Foto 1"  height="700">
   
   <img src="https://github.com/bielpatricio/Fleet/assets/32223762/7bcb7d79-c5e4-44ff-9710-a6e1e1ee5b98" alt="Foto 1"  height="700">
 
