@@ -10,8 +10,8 @@ import { HistoricCard, HistoricCardProps } from '@components/HistoricCard'
 import dayjs from 'dayjs'
 import { Realm, useUser } from '@realm/react'
 import {
-  getLastSyncTimestamp,
-  saveLastSyncTimestamp,
+  getLastAsyncTimestamp,
+  saveLastAsyncTimestamp,
 } from '@libs/asyncStorage/asyncStorage'
 import Toast from 'react-native-toast-message'
 import { TopMessage } from '@components/TopMessage'
@@ -69,7 +69,7 @@ export function Home() {
         'status = "arrival" SORT(created_at DESC)',
       )
 
-      const lastSync = await getLastSyncTimestamp()
+      const lastSync = await getLastAsyncTimestamp()
 
       const formattedHistoric = vehicles.map((item) => {
         return {
@@ -92,7 +92,7 @@ export function Home() {
     const percentage = (transferred / transferable) * 100
 
     if (percentage === 100) {
-      await saveLastSyncTimestamp()
+      await saveLastAsyncTimestamp()
       await fetchHistoric()
       setPercentageToSync(null)
 

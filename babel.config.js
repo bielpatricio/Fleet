@@ -26,6 +26,7 @@ module.exports = function (api) {
             '@contexts': './src/contexts',
             '@routes': './src/routes',
             '@libs': './src/libs',
+            '@tasks': './src/tasks',
           },
         },
       ],

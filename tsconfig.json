@@ -36,6 +36,9 @@
       ],
       "@libs/*": [
         "./src/libs/*"
+      ],
+      "@tasks/*": [
+        "./src/tasks/*"
       ]
     }
   }

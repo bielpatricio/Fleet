@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Container, Content, Message } from './styles'
+import { Container, Content, Message, MessageContent } from './styles'
 import { Header } from '@components/Header'
 import { LicensePlateInput } from '@components/LicensePlateInput'
 import { TextAreaInput } from '@components/TextAreaInput'
@@ -23,14 +23,17 @@ import {
   useForegroundPermissions,
   watchPositionAsync,
   LocationSubscription,
+  LocationObjectCoords,
+  requestBackgroundPermissionsAsync,
 } from 'expo-location'
 import { getAddressLocation } from '@utils/getAddressLocation'
 import { Loading } from '@components/Loading'
 import { Label } from '../../components/LocationInfo/styles'
 import { LocationInfo } from '@components/LocationInfo'
 import { Car } from 'phosphor-react-native'
-
-const keyboardAvoidingView = Platform.OS === 'android' ? 'height' : 'position'
+import { Map } from '@components/Map'
+import { startLocationTask } from '../../tasks/backgroundLocationTask'
+import { openSettings } from '@utils/openSettings'
 
 export function Departure() {
   const [description, setDescription] = useState('')
@@ -38,6 +41,9 @@ export function Departure() {
   const [isRegistering, setIsRegistering] = useState(false)
   const [isLoadingLocation, setIsLoadingLocation] = useState(true)
   const [currentAddress, setCurrentAddress] = useState<string | null>(null)
+
+  const [currentCoords, setCurrentCoords] =
+    useState<LocationObjectCoords | null>(null)
 
   const [locationForegroundPermission, requestLocationForegroundPermission] =
     useForegroundPermissions()
@@ -50,7 +56,8 @@ export function Departure() {
 
   const { goBack } = useNavigation()
 
-  function handleDepartureRegister() {
+  // get permissions
+  async function handleDepartureRegister() {
     try {
       if (!licensePlateValidate(licensePlate)) {
         licensePlateRef.current?.focus()
@@ -68,7 +75,28 @@ export function Departure() {
         )
       }
 
+      if (!currentCoords?.latitude && !currentCoords?.longitude) {
+        return Alert.alert(
+          'Localização',
+          'Não foi possível obter a localização atual. Por favor, verifique as permissões de localização do aplicativo.',
+          [{ text: 'Abrir configurações', onPress: openSettings }],
+        )
+      }
+
       setIsRegistering(true)
+
+      const backgroundPermissions = await requestBackgroundPermissionsAsync()
+
+      if (!backgroundPermissions) {
+        setIsRegistering(false)
+
+        return Alert.alert(
+          'Permissão de localização',
+          'Não foi possível obter a permissão de localização em segundo plano. Por favor, verifique as permissões de localização do aplicativo.',
+        )
+      }
+
+      await startLocationTask()
 
       realm.write(() => {
         realm.create(
@@ -77,6 +105,13 @@ export function Departure() {
             license_plate: licensePlate.toUpperCase(),
             user_id: user!.id,
             description,
+            coords: [
+              {
+                latitude: currentCoords.latitude,
+                longitude: currentCoords.longitude,
+                timestamp: new Date().getTime(),
+              },
+            ],
           }),
         )
       })
@@ -98,6 +133,7 @@ export function Departure() {
     requestLocationForegroundPermission()
   }, [])
 
+  // get locations
   useEffect(() => {
     if (!locationForegroundPermission?.granted) {
       return
@@ -111,6 +147,8 @@ export function Departure() {
         timeInterval: 1000,
       },
       (location) => {
+        setCurrentCoords(location.coords)
+
         getAddressLocation(location.coords)
           .then((address) => {
             if (address) {
@@ -132,11 +170,17 @@ export function Departure() {
     return (
       <Container>
         <Header title="Saída" />
-        <Message>
-          Você precisa permitir que o aplicativo tenha acesso a localização para
-          utilizar essa funcionalidade. Por favor, acesse as configurações do
-          seu dispositivo para conceder essa permissão ao aplicativo.
-        </Message>
+
+        <MessageContent>
+          <Message>
+            Você precisa permitir que o aplicativo tenha acesso a localização
+            para utilizar essa funcionalidade. Por favor, acesse as
+            configurações do seu dispositivo para conceder essa permissão ao
+            aplicativo.
+          </Message>
+
+          <Button title="Abrir configurações" onPress={openSettings} />
+        </MessageContent>
       </Container>
     )
   }
@@ -152,6 +196,7 @@ export function Departure() {
       {/* <KeyboardAvoidingView style={{ flex: 1 }} behavior={keyboardAvoidingView}> */}
       <KeyboardAwareScrollView extraHeight={100}>
         <ScrollView style={{ flex: 1 }}>
+          {currentCoords && <Map coordinates={[currentCoords]} />}
           <Content>
             {currentAddress && (
               <LocationInfo
